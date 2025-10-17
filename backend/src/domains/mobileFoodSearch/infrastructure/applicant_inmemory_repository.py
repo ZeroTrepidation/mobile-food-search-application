@@ -1,10 +1,15 @@
 from typing import List, Optional
 
-from backend.src.domains.mobileFoodSearch.domain.applicant import ApplicantRepository, Applicant
+from backend.src.domains.mobileFoodSearch.domain.applicant_repository import ApplicantRepository
+from backend.src.domains.mobileFoodSearch.domain.applicant import Applicant
 
 
 class ApplicantInMemoryRepository(ApplicantRepository):
-    """Stores applicants in memory (non-persistent)."""
+    """Stores applicants in memory (non-persistent).
+
+    Note: This repository does not fetch or refresh data from external sources.
+    Use an external loader/service to obtain data and push it via replace_all().
+    """
 
     def __init__(self):
         self._store: dict[str, Applicant] = {}
@@ -15,21 +20,20 @@ class ApplicantInMemoryRepository(ApplicantRepository):
     def get_by_id(self, applicant_id: str) -> Optional[Applicant]:
         return self._store.get(applicant_id)
 
-    async def refresh(self) -> None:
-        """Reload the dataset from Socrata and rebuild the in-memory cache."""
-        print(f"🔄 Refreshing applicants from Socrata dataset: {self._dataset_id}")
-        records = self._soda_client.fetch_data(self._dataset_id, limit=self._limit)
-
+    def replace_all(self, applicants: List[Applicant]) -> None:
         new_store: dict[str, Applicant] = {}
-        for row in records:
-            applicant = Applicant(
-                id=row.get("locationid", ""),
-                name=row.get("Applicant", ""),
-                facility_type=row.get("FacilityType", ""),
-                address=row.get("Address", ""),
-                status=row.get("Status", "")
-            )
-            new_store[applicant.id] = applicant
-
+        for a in applicants:
+            if a is None:
+                continue
+            key = None
+            # Support objects with attributes
+            if hasattr(a, 'locationId'):
+                key = getattr(a, 'locationId')
+            elif hasattr(a, 'id'):
+                key = getattr(a, 'id')
+            # Support dict rows from SODA
+            elif isinstance(a, dict):
+                key = a.get('locationid') or a.get('locationId') or a.get('id')
+            if key:
+                new_store[str(key)] = a
         self._store = new_store
-        print(f"✅ Repository refreshed with {len(new_store)} applicants.")
