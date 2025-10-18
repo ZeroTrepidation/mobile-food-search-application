@@ -3,23 +3,23 @@ from sodapy import Socrata
 from datetime import datetime, timezone
 import requests
 
+from backend.src.mobileFoodSearch.infrastructure.foodprovider_datasource import IFoodProviderDatasource
 
-class SODAClientDatasource:
 
-    def __init__(self, domain: str, dataset_id: str, app_token: str | None = None):
+class SODAClientDatasource(IFoodProviderDatasource):
+
+    def __init__(self, domain: str, dataset_id: str, app_token: str | None = None, base_url_override: str | None = None):
         assert domain and dataset_id
         self.domain = domain
         self.dataset_id = dataset_id
-        self.client = Socrata(self.domain, app_token)
+        self.client = Socrata(self.domain, app_token) if not base_url_override else None
+        self.base_url_override = base_url_override.rstrip('/') if base_url_override else None
 
-    def fetch_data(self, limit: int = 1000, offset: int = 0) -> List[dict]:
-        return self.client.get(self.dataset_id, limit=limit, offset=offset)
-
-    def fetch_all(self, batch_size: int = 5000) -> List[dict]:
+    def fetch_all(self, batch_size: int = 2000) -> List[dict]:
         results: List[dict] = []
         offset = 0
         while True:
-            chunk = self.fetch_data(limit=batch_size, offset=offset)
+            chunk = self.client.get(self.dataset_id, limit=batch_size, offset=offset)
             if not chunk:
                 break
             results.extend(chunk)

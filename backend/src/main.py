@@ -2,46 +2,40 @@ import os
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, HTTPException
+from typing import Any, List
 
-from backend.src.domains.mobileFoodSearch.infrastructure.applicant_inmemory_repository import \
-    ApplicantInMemoryRepository
-from backend.src.domains.mobileFoodSearch.infrastructure.sf_gov_datasource import SODAClientDatasource
-from backend.src.domains.mobileFoodSearch.application.soda_applicant_loader_service import SodaApplicantLoaderService
-from backend.src.domains.mobileFoodSearch.application.applicant_service import ApplicantService
+from fastapi.encoders import jsonable_encoder
+from starlette.responses import JSONResponse
 
+from .mobileFoodSearch import *
+from .mobileFoodSearch.domain.foodprovider import HasPermitStatus, LikeName, ClosestToPointSpecification
+from .mobileFoodSearch.domain.permit import PermitStatus
 
 # Initialize repository and SODA-backed loader service.
-applicant_repo = ApplicantInMemoryRepository()
+foodprovider_repo = FoodproviderInMemoryRepository()
 
 SODA_DOMAIN = os.getenv("SODA_DOMAIN", "data.sfgov.org")
 SODA_DATASET_ID = os.getenv("SODA_DATASET_ID", "rqzj-sfat")
-soda = SODAClientDatasource(SODA_DOMAIN, SODA_DATASET_ID)
-
-# Minimal mapping from Socrata row dict to a simple entity with a stable key.
-class RowApplicant:
-    def __init__(self, row: dict):
-        # Use common Socrata field names; fall back gracefully
-        self.locationId = row.get("locationid") or row.get("locationId") or ""
-        self.name = row.get("Applicant") or row.get("applicant") or ""
-        self.foodItems = row.get("FoodItems") or row.get("fooditems") or ""
-        self.raw = row
+SODA_BASE_URL_OVERRIDE = os.getenv("SODA_BASE_URL_OVERRIDE")
+soda = SODAClientDatasource(SODA_DOMAIN, SODA_DATASET_ID, base_url_override=SODA_BASE_URL_OVERRIDE)
 
 
-def to_entity(row: dict) -> RowApplicant:
-    return RowApplicant(row)
-
-loader_service = SodaApplicantLoaderService(applicant_repo, soda, to_entity, interval_seconds=3600)
-applicant_service = ApplicantService(applicant_repo)
-
+loader_service = None
+food_provider_search = None
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    try:
+        loader_service = SodaApplicantLoaderService(foodprovider_repo, soda, interval_seconds=3600)
+        food_provider_search = FoodProviderSearchService(foodprovider_repo)
+    except Exception as ex:
+        print(ex)
+        raise
     loader_service.start()
     yield
     await loader_service.stop()
 
 app = FastAPI(lifespan=lifespan)
-
 
 @app.get("/")
 async def root():
@@ -52,41 +46,57 @@ async def root():
 async def health_check():
     return {"status": "ok"}
 
+BASE_API_PATH = "/api/v1"
 
-@app.get("/applicants/{applicant_id}")
-async def get_applicant_by_id(applicant_id: str):
-    obj = applicant_service.get_applicant_by_id(applicant_id)
-    if not obj:
-        raise HTTPException(status_code=404, detail="Applicant not found")
+@app.get(BASE_API_PATH + "/food-providers/name/{name}")
+async def get_food_providers(name: str = "", status: str = "") -> List[dict]:
 
-    # Map repository object (RowApplicant, domain Applicant, or dict) to a simple response
-    if isinstance(obj, dict):
-        return {
-            "locationId": obj.get("locationid") or obj.get("locationId") or obj.get("id") or "",
-            "name": obj.get("Applicant") or obj.get("applicant") or "",
-            "foodItems": obj.get("FoodItems") or obj.get("fooditems") or "",
-        }
+    if name == "":
+        raise HTTPException(status_code=400, detail="Name cannot be empty")
 
-    resp = {}
-    if hasattr(obj, "locationId"):
-        resp["locationId"] = getattr(obj, "locationId")
-    if hasattr(obj, "name"):
-        resp["name"] = getattr(obj, "name")
-    if hasattr(obj, "foodItems"):
-        resp["foodItems"] = getattr(obj, "foodItems")
+    spec = LikeName(name)
 
-    # Fallback: attempt to derive locationId from nested structures
-    if "locationId" not in resp:
+    if status != "":
         try:
-            loc_id = getattr(getattr(obj, "permit", None), "locationId", None) or getattr(obj, "id", None)
-            if loc_id:
-                resp["locationId"] = str(loc_id)
-        except Exception:
-            pass
+            permit_status = PermitStatus(status)
+        except ValueError:
+            raise HTTPException(
+                status_code=400,
+                detail=f"'{status}' is not a valid PermitStatus"
+            )
+        spec &= HasPermitStatus(permit_status)
 
-    # Optionally include raw source data if present
-    if hasattr(obj, "raw"):
-        resp["raw"] = getattr(obj, "raw")
+    items = foodprovider_repo.get_by_spec(spec)
+    return [jsonable_encoder(p) for p in items]
 
-    return resp
 
+@app.get("/food-providers/street/{street}")
+async def get_food_providers(street: str = "") -> List[dict]:
+    if street == "":
+        raise HTTPException(status_code=400, detail="Street cannot be empty")
+    spec = LikeName(street)
+
+    items = foodprovider_repo.get_by_spec(spec)
+    return [jsonable_encoder(p) for p in items]
+
+
+@app.get("/food-providers/closest")
+async def get_n_closest_providers(long: str, lat: str, status: str = "APPROVED", limit: str = "5") -> List[dict]:
+    if long == "" or lat == "":
+        raise HTTPException(status_code=400, detail="Long/Lat cannot be empty")
+
+    try:
+        long_float = float(long)
+        lat_float = float(lat)
+        limit = int(limit)
+
+    except ValueError:
+        raise HTTPException(
+            status_code=400,
+            detail=f"'{long}' is not a valid float"
+        )
+
+    spec = ClosestToPointSpecification(long_float, lat_float, limit)
+
+    items = foodprovider_repo.get_by_spec(spec)
+    return [jsonable_encoder(p) for p in items]
