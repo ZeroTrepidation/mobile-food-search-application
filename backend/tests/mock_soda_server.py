@@ -21,14 +21,14 @@ class MockSodaServer:
         @self.app.get("/resource/{dataset}.json")
         async def resource(dataset: str):
             # ignore dataset value; serve the fixture for simplicity
-            data_path = self._fixtures_dir / "soda_providers.json"
+            data_path = self._fixtures_dir / "mock_providers.json"
             with data_path.open("r", encoding="utf-8") as f:
                 data = json.load(f)
             return JSONResponse(content=data)
 
         @self.app.get("/api/views/{dataset}.json")
         async def views(dataset: str):
-            meta_path = self._fixtures_dir / "soda_views.json"
+            meta_path = self._fixtures_dir / "mock_views.json"
             with meta_path.open("r", encoding="utf-8") as f:
                 data = json.load(f)
             return JSONResponse(content=data)

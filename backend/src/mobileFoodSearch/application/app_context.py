@@ -32,6 +32,10 @@ class ApplicationContext:
         if self._loader_service:
             self._loader_service.start()
 
+    async def load_once(self) -> None:
+        if self._loader_service:
+            await self._loader_service.run_once()
+
     async def stop(self) -> None:
         if self._loader_service:
             await self._loader_service.stop()

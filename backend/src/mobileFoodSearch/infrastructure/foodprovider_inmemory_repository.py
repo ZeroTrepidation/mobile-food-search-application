@@ -19,11 +19,8 @@ class FoodproviderInMemoryRepository(FoodProviderRepository):
         return list(self._store.values())
 
     def get_by_spec(self, spec: Specification[FoodProvider]) -> List[FoodProvider]:
-        """Return all FoodProviders satisfying a spec, respecting sorting if defined."""
-        # Filter by satisfaction first
         filtered = [p for p in self._store.values() if spec.is_satisfied_by(p)]
 
-        # If the spec supports sorting (like our ClosestToPointSpecification), apply it
         if hasattr(spec, "sort_by_distance"):
             return spec.sort_by_distance(filtered)
 
@@ -34,7 +31,6 @@ class FoodproviderInMemoryRepository(FoodProviderRepository):
             if a is None:
                 continue
             key = None
-            # Support objects with attributes
             if hasattr(a, 'locationId'):
                 key = getattr(a, 'locationId')
             if key:

@@ -5,16 +5,14 @@ from fastapi import FastAPI, HTTPException
 from typing import Any, List
 
 from fastapi.encoders import jsonable_encoder
-from starlette.responses import JSONResponse
 
 from .mobileFoodSearch import *
 from .mobileFoodSearch.domain.foodprovider import HasPermitStatus, LikeName, ClosestToPointSpecification, LikeStreetName
 from .mobileFoodSearch.domain.permit import PermitStatus
 from .mobileFoodSearch.application.app_context import ApplicationContext
 
-
-
 app_ctx: ApplicationContext | None = None
+
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -26,11 +24,17 @@ async def lifespan(app: FastAPI):
     except Exception as ex:
         print(ex)
         raise
+    # Ensure initial data is loaded before serving any requests
+    await app_ctx.load_once()
+    # Start background refresh (no-op in test env without running loop)
     app_ctx.start()
     yield
     await app_ctx.stop()
+    app_ctx = None
+
 
 app = FastAPI(lifespan=lifespan)
+
 
 @app.get("/")
 async def root():
@@ -41,11 +45,12 @@ async def root():
 async def health_check():
     return {"status": "ok"}
 
+
 BASE_API_PATH = "/api/v1"
+
 
 @app.get(BASE_API_PATH + "/food-providers/name/{name}")
 async def get_food_providers(name: str = "", status: str = "") -> List[dict]:
-
     if name == "":
         raise HTTPException(status_code=400, detail="Name cannot be empty")
 
@@ -62,7 +67,7 @@ async def get_food_providers(name: str = "", status: str = "") -> List[dict]:
         spec &= HasPermitStatus(permit_status)
 
     items = app_ctx.repository.get_by_spec(spec)
-    return [jsonable_encoder(p) for p in items]
+    return [p.to_dict() for p in items]
 
 
 @app.get(BASE_API_PATH + "/food-providers/street/{street}")
@@ -93,7 +98,6 @@ async def get_n_closest_providers(lng: str, lat: str, status: str = "APPROVED", 
             detail=f"'{lng}' is not a valid float"
         )
 
-    # ClosestToPointSpecification expects (latitude, longitude)
     spec = ClosestToPointSpecification(lat_float, long_float, limit)
 
     items = app_ctx.repository.get_by_spec(spec)

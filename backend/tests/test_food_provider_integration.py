@@ -10,8 +10,8 @@ from fastapi.testclient import TestClient
 import backend.src.mobileFoodSearch.infrastructure.sf_gov_datasource as sf_ds
 
 
-TEST_RESOURCES = Path(__file__).parent / "resources"
-SODA_PROVIDERS_PATH = TEST_RESOURCES / "soda_providers.json"
+TEST_RESOURCES = Path(__file__).parent / "fixtures"
+SODA_PROVIDERS_PATH = TEST_RESOURCES / "mock_providers.json"
 
 
 @pytest.fixture(autouse=True)

@@ -6,11 +6,7 @@ from backend.src.mobileFoodSearch.specification import Specification
 
 
 class FoodProviderRepository(ABC):
-    """Defines how applicant data is accessed and stored.
-
-    Note: The repository is intentionally not responsible for fetching or refreshing
-    data from external sources. Use an external loader/service to obtain data and
-    push it into the repository via replace_all().
+    """Defines how applicant data is accessed and stored within the application.
     """
 
     @abstractmethod

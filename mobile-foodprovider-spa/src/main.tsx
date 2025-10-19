@@ -3,9 +3,10 @@ import ReactDOM from 'react-dom/client'
 import { PrimeReactProvider } from "primereact/api";
 import App from './App'
 import './index.css'
-import 'primereact/resources/themes/lara-dark-teal/theme.css'; // Choose your desired theme
-import 'primereact/resources/primereact.min.css'; // Core PrimeReact CSS
-import 'primeicons/primeicons.css'; // PrimeIcons CSS
+import 'primeflex/primeflex.css';
+import 'primereact/resources/themes/mira/theme.css'
+import 'primereact/resources/primereact.min.css';
+import 'primeicons/primeicons.css';
 
 ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
   <React.StrictMode>
