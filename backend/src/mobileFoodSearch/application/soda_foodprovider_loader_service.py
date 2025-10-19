@@ -77,7 +77,7 @@ class SodaApplicantLoaderService:
             await self.run_once()
 
 
-def map_json_to_food_provider(data: dict) -> FoodProvider:
+def map_json_to_food_provider(data: dict) -> FoodProvider | None:
     """
     Converts a raw JSON dictionary from the Socrata dataset
     into a FoodProvider domain object.
@@ -98,7 +98,6 @@ def map_json_to_food_provider(data: dict) -> FoodProvider:
     received_date = data.get("received")
     expiration_date = data.get("expirationdate")
 
-    # Normalize date strings
     def parse_date(value: Optional[str]) -> Optional[datetime]:
         if not value:
             return None
@@ -107,6 +106,12 @@ def map_json_to_food_provider(data: dict) -> FoodProvider:
                 return datetime.strptime(value, fmt)
             except ValueError:
                 continue
+        return None
+
+    longitude, latitude = _try_float(data["longitude"]), _try_float(data["latitude"])
+    if (longitude is None) or (latitude is None):
+        return None
+    if longitude is 0.0 and latitude is 0.0:
         return None
 
     permit = None

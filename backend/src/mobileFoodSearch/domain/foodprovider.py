@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
 from datetime import datetime, timezone
 from typing import Optional, List
 
@@ -89,19 +88,15 @@ class LikeStreetName(Specification[FoodProvider]):
 
 
 class ClosestToPointSpecification(Specification[FoodProvider]):
-    """Returns the closest N FoodProviders to a given (lat, lon) point."""
-
     def __init__(self, latitude: float, longitude: float, limit: int = 5):
         self.latitude = latitude
         self.longitude = longitude
         self.limit = limit
 
     def is_satisfied_by(self, provider: FoodProvider) -> bool:
-        """All providers with valid coordinates are 'satisfied' — ranking happens later."""
         return provider.latitude is not None and provider.longitude is not None
 
     def sort_by_distance(self, providers: List[FoodProvider]) -> List[FoodProvider]:
-        """Return providers sorted by distance ascending."""
         def distance(provider: FoodProvider):
             return haversine_distance(
                 self.latitude,
@@ -113,7 +108,6 @@ class ClosestToPointSpecification(Specification[FoodProvider]):
 
 
 def haversine_distance(lat1: float, lon1: float, lat2: float, lon2: float) -> float:
-    """Return distance in kilometers between two lat/lon pairs."""
     R = 6371.0  # Earth radius in km
     lat1, lon1, lat2, lon2 = map(radians, [lat1, lon1, lat2, lon2])
     dlat = lat2 - lat1

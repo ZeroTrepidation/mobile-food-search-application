@@ -2,7 +2,6 @@ from __future__ import annotations
 
 from typing import Optional
 
-from backend.src.mobileFoodSearch.application.foodprovider_search_service import FoodProviderSearchService
 from backend.src.mobileFoodSearch.application.soda_foodprovider_loader_service import SodaApplicantLoaderService
 from backend.src.mobileFoodSearch.domain.foodprovider_repository import FoodProviderRepository
 from backend.src.mobileFoodSearch.infrastructure.foodprovider_datasource import IFoodProviderDatasource
@@ -23,8 +22,7 @@ class ApplicationContext:
     ) -> None:
         self.repository: FoodProviderRepository = repository
         self.datasource: IFoodProviderDatasource = datasource
-        self.search_service = FoodProviderSearchService(self.repository)
-        self._loader_service: Optional[SodaApplicantLoaderService] = SodaApplicantLoaderService(
+        self._loader_service: SodaApplicantLoaderService = SodaApplicantLoaderService(
             repository=self.repository,
             datasource=self.datasource,
             interval_seconds=interval_seconds,

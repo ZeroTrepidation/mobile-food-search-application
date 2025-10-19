@@ -12,8 +12,6 @@ from .mobileFoodSearch.domain.foodprovider import HasPermitStatus, LikeName, Clo
 from .mobileFoodSearch.domain.permit import PermitStatus
 from .mobileFoodSearch.application.app_context import ApplicationContext
 
-# Initialize repository and SODA-backed loader service via ApplicationContext.
-
 
 
 app_ctx: ApplicationContext | None = None
@@ -55,7 +53,7 @@ async def get_food_providers(name: str = "", status: str = "") -> List[dict]:
 
     if status != "":
         try:
-            permit_status = PermitStatus(status)
+            permit_status = PermitStatus(status.upper())
         except ValueError:
             raise HTTPException(
                 status_code=400,
