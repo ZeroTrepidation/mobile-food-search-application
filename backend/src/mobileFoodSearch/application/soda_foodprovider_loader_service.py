@@ -7,14 +7,14 @@ from typing import Optional, List
 from backend.src.mobileFoodSearch.domain.foodprovider import FoodProvider
 from backend.src.mobileFoodSearch.domain.foodprovider_repository import FoodProviderRepository
 from backend.src.mobileFoodSearch.domain.permit import PermitStatus, Permit
-from backend.src.mobileFoodSearch.infrastructure.sf_gov_datasource import SODAClientDatasource
+from backend.src.mobileFoodSearch.infrastructure.foodprovider_datasource import IFoodProviderDatasource
 
 
 class SodaApplicantLoaderService:
     def __init__(
         self,
         repository: FoodProviderRepository,
-        datasource: SODAClientDatasource,
+        datasource: IFoodProviderDatasource,
         interval_seconds: int = 3600,
     ) -> None:
         self._repo = repository
@@ -119,7 +119,6 @@ def map_json_to_food_provider(data: dict) -> FoodProvider:
             expirationDate=parse_date(expiration_date),
         )
 
-    # --- FoodProvider construction ---
     provider = FoodProvider(
         location_id=str(data.get("objectid", "")),
         name=data.get("applicant", ""),

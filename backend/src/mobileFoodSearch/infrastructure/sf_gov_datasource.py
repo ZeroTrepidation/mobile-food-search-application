@@ -8,12 +8,11 @@ from backend.src.mobileFoodSearch.infrastructure.foodprovider_datasource import 
 
 class SODAClientDatasource(IFoodProviderDatasource):
 
-    def __init__(self, domain: str, dataset_id: str, app_token: str | None = None, base_url_override: str | None = None):
+    def __init__(self, domain: str, dataset_id: str, app_token: str | None = None):
         assert domain and dataset_id
         self.domain = domain
         self.dataset_id = dataset_id
-        self.client = Socrata(self.domain, app_token) if not base_url_override else None
-        self.base_url_override = base_url_override.rstrip('/') if base_url_override else None
+        self.client = Socrata(self.domain, app_token)
 
     def fetch_all(self, batch_size: int = 2000) -> List[dict]:
         results: List[dict] = []

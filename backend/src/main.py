@@ -8,32 +8,29 @@ from fastapi.encoders import jsonable_encoder
 from starlette.responses import JSONResponse
 
 from .mobileFoodSearch import *
-from .mobileFoodSearch.domain.foodprovider import HasPermitStatus, LikeName, ClosestToPointSpecification
+from .mobileFoodSearch.domain.foodprovider import HasPermitStatus, LikeName, ClosestToPointSpecification, LikeStreetName
 from .mobileFoodSearch.domain.permit import PermitStatus
+from .mobileFoodSearch.application.app_context import ApplicationContext
 
-# Initialize repository and SODA-backed loader service.
-foodprovider_repo = FoodproviderInMemoryRepository()
-
-SODA_DOMAIN = os.getenv("SODA_DOMAIN", "data.sfgov.org")
-SODA_DATASET_ID = os.getenv("SODA_DATASET_ID", "rqzj-sfat")
-SODA_BASE_URL_OVERRIDE = os.getenv("SODA_BASE_URL_OVERRIDE")
-soda = SODAClientDatasource(SODA_DOMAIN, SODA_DATASET_ID, base_url_override=SODA_BASE_URL_OVERRIDE)
+# Initialize repository and SODA-backed loader service via ApplicationContext.
 
 
-loader_service = None
-food_provider_search = None
+
+app_ctx: ApplicationContext | None = None
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    global app_ctx
+    soda = SODAClientDatasource("data.sfgov.org", "rqzj-sfat")
+    foodprovider_repo = FoodproviderInMemoryRepository()
     try:
-        loader_service = SodaApplicantLoaderService(foodprovider_repo, soda, interval_seconds=3600)
-        food_provider_search = FoodProviderSearchService(foodprovider_repo)
+        app_ctx = ApplicationContext(repository=foodprovider_repo, datasource=soda, interval_seconds=3600)
     except Exception as ex:
         print(ex)
         raise
-    loader_service.start()
+    app_ctx.start()
     yield
-    await loader_service.stop()
+    await app_ctx.stop()
 
 app = FastAPI(lifespan=lifespan)
 
@@ -66,37 +63,40 @@ async def get_food_providers(name: str = "", status: str = "") -> List[dict]:
             )
         spec &= HasPermitStatus(permit_status)
 
-    items = foodprovider_repo.get_by_spec(spec)
+    items = app_ctx.repository.get_by_spec(spec)
     return [jsonable_encoder(p) for p in items]
 
 
-@app.get("/food-providers/street/{street}")
+@app.get(BASE_API_PATH + "/food-providers/street/{street}")
 async def get_food_providers(street: str = "") -> List[dict]:
     if street == "":
         raise HTTPException(status_code=400, detail="Street cannot be empty")
-    spec = LikeName(street)
+    spec = LikeStreetName(street)
 
-    items = foodprovider_repo.get_by_spec(spec)
+    print(street)
+
+    items = app_ctx.repository.get_by_spec(spec)
     return [jsonable_encoder(p) for p in items]
 
 
-@app.get("/food-providers/closest")
-async def get_n_closest_providers(long: str, lat: str, status: str = "APPROVED", limit: str = "5") -> List[dict]:
-    if long == "" or lat == "":
+@app.get(BASE_API_PATH + "/food-providers/closest")
+async def get_n_closest_providers(lng: str, lat: str, status: str = "APPROVED", limit: str = "5") -> List[dict]:
+    if lng == "" or lat == "":
         raise HTTPException(status_code=400, detail="Long/Lat cannot be empty")
 
     try:
-        long_float = float(long)
+        long_float = float(lng)
         lat_float = float(lat)
         limit = int(limit)
 
     except ValueError:
         raise HTTPException(
             status_code=400,
-            detail=f"'{long}' is not a valid float"
+            detail=f"'{lng}' is not a valid float"
         )
 
-    spec = ClosestToPointSpecification(long_float, lat_float, limit)
+    # ClosestToPointSpecification expects (latitude, longitude)
+    spec = ClosestToPointSpecification(lat_float, long_float, limit)
 
-    items = foodprovider_repo.get_by_spec(spec)
+    items = app_ctx.repository.get_by_spec(spec)
     return [jsonable_encoder(p) for p in items]
