@@ -6,8 +6,8 @@ import pytest
 
 from backend.app.adapters.memory import InMemoryFoodProviderRepository
 from backend.app.adapters.sfgov_client import SFGovFoodProviderDataClient
-from backend.tests import helpers  # type: ignore
 from backend.app.data_manager import DataManager
+from backend.tests import helpers  # type: ignore
 
 
 class TestClient(SFGovFoodProviderDataClient):

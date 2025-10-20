@@ -11,9 +11,11 @@ data_clients = [sfgov_datasource]
 
 data_manager = DataManager(repository, data_clients)
 
+
 async def initialize():
     # Start background data manager loop
     data_manager.start()
+
 
 async def shutdown():
     await data_manager.stop()

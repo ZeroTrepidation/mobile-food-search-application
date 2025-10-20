@@ -13,11 +13,13 @@ def parse_float(value):
     except ValueError:
         raise ValidationError('Value not parseable as float')
 
+
 def parse_int(value):
     try:
         return int(value)
     except ValueError:
         raise ValidationError('Value not parseable as int')
+
 
 Longitude = Annotated[float, BeforeValidator(parse_float)]
 Latitude = Annotated[float, BeforeValidator(parse_float)]
@@ -61,12 +63,14 @@ class PermitStatus(Enum):
     SUSPEND = "SUSPEND"
     ISSUED = "ISSUED"
 
+
 class Permit(BaseModel):
     permitStatus: PermitStatus
     permitID: str
     approvalDate: Optional[datetime]
     recievedDate: Optional[datetime]
     expirationDate: Optional[datetime]
+
 
 class FoodProvider(BaseModel):
     location_id: str

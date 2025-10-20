@@ -8,19 +8,19 @@ from backend.app.routers import foodproviders
 
 logging.basicConfig(level=logging.INFO)
 
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     await initialize()
     yield
     await shutdown()
 
+
 app = FastAPI(lifespan=lifespan, dependencies=[Depends(get_repository)])
 
 app.include_router(foodproviders.router)
 
+
 @app.get("/health")
 async def health_check():
     return {"status": "ok"}
-
-
-

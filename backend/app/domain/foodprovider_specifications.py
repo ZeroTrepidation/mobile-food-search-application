@@ -1,4 +1,3 @@
-from math import radians, sin, cos, sqrt, atan2
 from typing import List
 
 from backend.app.domain.models import FoodProvider, PermitStatus, Coordinate
@@ -11,8 +10,8 @@ class HasPermitStatus(Specification[FoodProvider]):
 
     def is_satisfied_by(self, provider: FoodProvider) -> bool:
         return (
-            provider.permit is not None
-            and provider.permit.permitStatus == self.status
+                provider.permit is not None
+                and provider.permit.permitStatus == self.status
         )
 
 
@@ -43,6 +42,7 @@ class ClosestToPointSpecification(Specification[FoodProvider]):
     def sort_by_distance(self, providers: List[FoodProvider]) -> List[FoodProvider]:
         def get_distance(provider: FoodProvider):
             return provider.coord.distance_to(self.reference_point)
+
         return sorted(providers, key=get_distance)[: self.limit]
 
     def order(self, items: List[FoodProvider]) -> List[FoodProvider]:

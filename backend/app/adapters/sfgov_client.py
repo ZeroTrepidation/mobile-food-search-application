@@ -10,19 +10,17 @@ from sodapy import Socrata
 from backend.app.domain.models import FoodProvider, Permit, PermitStatus, Coordinate
 from backend.app.domain.ports import FoodProviderDataClient
 
-
 DATASET_ID = "rqzj-sfat"  # Mobile Food Facility Permits (SF Gov)
 DOMAIN = "data.sfgov.org"
 
 logger = logging.getLogger(__name__)
+
 
 class SFGovFoodProviderDataClient(FoodProviderDataClient):
     """SFGov implementation of FoodProviderClient using the Socrata API."""
 
     def __init__(self, app_token: Optional[str] = None):
         self.client = Socrata(DOMAIN, app_token, timeout=30)
-
-
 
     async def fetch_all(self) -> List[dict]:
         logger.info("Fetching SFGovFoodProviderClient data")
@@ -63,6 +61,7 @@ class SFGovFoodProviderDataClient(FoodProviderDataClient):
 
     def get_interval(self) -> int:
         return 3600
+
 
 def _parse_dt(value: Optional[str]) -> Optional[datetime]:
     if not value:

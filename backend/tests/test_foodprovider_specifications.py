@@ -1,10 +1,7 @@
-import pytest
-from datetime import datetime, timedelta, timezone
-
 from backend.app.adapters.memory import InMemoryFoodProviderRepository
 from backend.app.domain.foodprovider_specifications import HasPermitStatus, LikeName, LikeStreetName, \
     ClosestToPointSpecification
-from backend.app.domain.models import PermitStatus, Permit, FoodProvider, Coordinate
+from backend.app.domain.models import PermitStatus, Coordinate
 from backend.tests.helpers import make_provider, make_permit
 
 

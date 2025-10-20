@@ -9,14 +9,15 @@ from backend.app.domain.foodprovider_specifications import HasPermitStatus, Like
 from backend.app.domain.models import PermitStatus, FoodProvider, Coordinate
 from backend.app.domain.ports import FoodProviderRepository
 
-
 router = APIRouter(
     prefix="/api/v1/food-providers",
     dependencies=[Depends(get_repository)],
 )
 
+
 @router.get("/name/{name}", response_model=List[FoodProvider])
-async def get_food_providers(repository: Annotated[FoodProviderRepository, Depends(get_repository)], name: str = "", status: str = ""):
+async def get_food_providers(repository: Annotated[FoodProviderRepository, Depends(get_repository)], name: str = "",
+                             status: str = ""):
     if name == "":
         raise HTTPException(status_code=400, detail="Name cannot be empty")
 
@@ -49,8 +50,8 @@ async def get_food_providers(repository: Annotated[FoodProviderRepository, Depen
 
 
 @router.get("/closest", response_model=List[FoodProvider])
-async def get_n_closest_providers(repository: Annotated[FoodProviderRepository, Depends(get_repository)], lng: str, lat: str, status: str = "APPROVED", limit: str = "5"):
-
+async def get_n_closest_providers(repository: Annotated[FoodProviderRepository, Depends(get_repository)], lng: str,
+                                  lat: str, status: str = "APPROVED", limit: str = "5"):
     try:
         limit_int = int(limit)
     except ValueError:

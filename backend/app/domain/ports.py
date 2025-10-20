@@ -1,6 +1,6 @@
-from abc import ABC, abstractmethod, abstractproperty
+from abc import ABC, abstractmethod
 from datetime import datetime
-from typing import List, Optional
+from typing import List
 
 from backend.app.domain.models import FoodProvider
 from backend.app.domain.specification import Specification
@@ -62,6 +62,3 @@ class FoodProviderDataClient(ABC):
         Default: every hour.
         """
         return 3600
-
-
-

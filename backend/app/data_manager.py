@@ -50,7 +50,8 @@ class DataManager:
                             providers = client.map_results(rows)
                             self._repository.replace_all(providers)
                             self._last_updates[client] = source_updated_at
-                            logger.info(f"Updated repository with {len(providers)} providers from {client.__class__.__name__}")
+                            logger.info(
+                                f"Updated repository with {len(providers)} providers from {client.__class__.__name__}")
                         except Exception as e:
                             logger.exception(f"Failed to update from {client.__class__.__name__}: {e}")
                 # Sleep for the minimum interval among clients

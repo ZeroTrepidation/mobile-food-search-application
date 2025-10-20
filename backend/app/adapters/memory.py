@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import List, Dict
 
-from backend.app.domain.models import FoodProvider, PermitStatus
+from backend.app.domain.models import FoodProvider
 from backend.app.domain.ports import FoodProviderRepository
 from backend.app.domain.specification import Specification
 
