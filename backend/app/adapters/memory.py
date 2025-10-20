@@ -33,9 +33,6 @@ class InMemoryFoodProviderRepository(FoodProviderRepository):
         return list(self._store.values())
 
     def get_by_spec(self, spec: Specification[FoodProvider]) -> List[FoodProvider]:
-        filtered = [p for p in self._store.values() if spec.is_satisfied_by(p)]
-
-        if hasattr(spec, "sort_by_distance"):
-            return spec.sort_by_distance(filtered)
-
-        return filtered
+        filtered = spec.filter(self.get_all())
+        # Allow specification to influence ordering
+        return spec.order(filtered)

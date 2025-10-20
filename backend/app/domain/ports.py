@@ -30,30 +30,35 @@ class FoodProviderRepository(ABC):
         """
 
 
-class FoodProviderClient(ABC):
+class FoodProviderDataClient(ABC):
     """
     Port responsible for communicating with an external food provider API.
-    Each implementation should know how to fetch and transform data into domain models.
+    Each implementation should define how to fetch raw data and map it to domain models.
+    It should NOT perform scheduling or repository updates.
     """
 
     @abstractmethod
-    async def fetch_all(self) -> List[FoodProvider]:
+    async def fetch_all(self) -> List[dict]:
         """
-        Fetch and return all providers from the external API.
+        Fetch and return all providers from the external API as raw dict rows.
         """
 
     @abstractmethod
-    async def periodic_task(self) -> None:
+    def map_results(self, results: List[dict]) -> List[FoodProvider]:
         """
-        Execute the client's update process.
-        This is the method Celery will call periodically.
-        Should handle checking for, fetching and saving new data.
+        Map raw result rows into domain FoodProvider objects. May use update_time for metadata.
+        """
+
+    @abstractmethod
+    def get_source_updated_at(self) -> datetime:
+        """
+        Return the last-updated timestamp from the upstream data source (in UTC).
+        Implementations should query source metadata and parse to datetime.
         """
 
     def get_interval(self) -> int:
         """
-        Return the dynamic interval (in seconds) between periodic updates.
-        Used by the scheduler (Celery beat) to determine frequency.
+        Return the dynamic interval (in seconds) between metadata checks.
         Default: every hour.
         """
         return 3600

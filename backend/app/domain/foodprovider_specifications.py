@@ -1,8 +1,7 @@
-from datetime import datetime, timezone
 from math import radians, sin, cos, sqrt, atan2
 from typing import List
 
-from backend.app.domain.models import FoodProvider, PermitStatus
+from backend.app.domain.models import FoodProvider, PermitStatus, Coordinate
 from backend.app.domain.specification import Specification
 
 
@@ -15,13 +14,6 @@ class HasPermitStatus(Specification[FoodProvider]):
             provider.permit is not None
             and provider.permit.permitStatus == self.status
         )
-
-
-class IsExpired(Specification[FoodProvider]):
-    def is_satisfied_by(self, provider: FoodProvider) -> bool:
-        if not provider.permit or not provider.permit.expirationDate:
-            return False
-        return provider.permit.expirationDate < datetime.now(timezone.utc)
 
 
 class LikeName(Specification[FoodProvider]):
@@ -41,30 +33,18 @@ class LikeStreetName(Specification[FoodProvider]):
 
 
 class ClosestToPointSpecification(Specification[FoodProvider]):
-    def __init__(self, latitude: float, longitude: float, limit: int = 5):
-        self.latitude = latitude
-        self.longitude = longitude
+    def __init__(self, point: Coordinate, limit: int = 5):
+        self.reference_point: Coordinate = point
         self.limit = limit
 
     def is_satisfied_by(self, provider: FoodProvider) -> bool:
-        return provider.coord is not None
+        return provider.coord is not None and (provider.coord.latitude != 0.0 and provider.coord.longitude != 0.0)
 
     def sort_by_distance(self, providers: List[FoodProvider]) -> List[FoodProvider]:
-        def distance(provider: FoodProvider):
-            return haversine_distance(
-                self.latitude,
-                self.longitude,
-                provider.coord.latitude,
-                provider.coord.longitude,
-            )
-        return sorted(providers, key=distance)[: self.limit]
+        def get_distance(provider: FoodProvider):
+            return provider.coord.distance_to(self.reference_point)
+        return sorted(providers, key=get_distance)[: self.limit]
 
-
-def haversine_distance(lat1: float, lon1: float, lat2: float, lon2: float) -> float:
-    R = 6371.0  # Earth radius in km
-    lat1, lon1, lat2, lon2 = map(radians, [lat1, lon1, lat2, lon2])
-    dlat = lat2 - lat1
-    dlon = lon2 - lon1
-    a = sin(dlat / 2) ** 2 + cos(lat1) * cos(lat2) * sin(dlon / 2) ** 2
-    c = 2 * atan2(sqrt(a), sqrt(1 - a))
-    return R * c
+    def order(self, items: List[FoodProvider]) -> List[FoodProvider]:
+        # Delegate to existing distance-based sorter while enforcing limit
+        return self.sort_by_distance(items)
