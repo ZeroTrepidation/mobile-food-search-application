@@ -44,6 +44,8 @@ Windows:
 
 The backend should now be running on http://localhost:8000/
 
+Swagger documentation can additionally be found at http://localhost:8000/api/docs
+
 Additionally tests can be run by using:
 
 `pytest`
@@ -52,7 +54,7 @@ Additionally tests can be run by using:
 
 To build and run the frontend, run the following commands (from the root directory):
 
-`cd mobile-food-search-application/frontend`
+`cd mobile-food-search-application/mobile-foodprovider-spa`
 
 `npm install`
 
