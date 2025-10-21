@@ -1,8 +1,8 @@
-from backend.app.adapters.memory import InMemoryFoodProviderRepository
-from backend.app.domain.foodprovider_specifications import HasPermitStatus, LikeName, LikeStreetName, \
+from app.adapters.memory import InMemoryFoodProviderRepository
+from app.domain.foodprovider_specifications import HasPermitStatus, LikeName, LikeStreetName, \
     ClosestToPointSpecification
-from backend.app.domain.models import PermitStatus, Coordinate
-from backend.tests.helpers import make_provider, make_permit
+from app.domain.models import PermitStatus, Coordinate
+from tests.helpers import make_provider, make_permit
 
 
 class TestSpecifications:

@@ -3,7 +3,7 @@ from enum import Enum
 from math import radians, atan2, sin, sqrt, cos
 from typing import Optional
 
-from pydantic import BaseModel, field_validator, ValidationError, BeforeValidator
+from pydantic import BaseModel, field_validator, ValidationError, BeforeValidator, model_validator
 from typing_extensions import Annotated
 
 
@@ -45,15 +45,22 @@ class Coordinate(BaseModel):
     @classmethod
     def validate_longitude(cls, v):
         if v < -180 or v > 180:
-            raise ValidationError('Coordinate must be between -180 and 180')
+            raise ValueError('Coordinate must be between -180 and 180')
         return v
 
     @field_validator('latitude', mode='after')
     @classmethod
     def validate_latitude(cls, v):
         if v < -90 or v > 90:
-            raise ValidationError('Coordinate must be between -90 and 90')
+            raise ValueError('Coordinate must be between -90 and 90')
         return v
+
+    # I got sick of dealing with locations in the middle of nowhere
+    @model_validator(mode='after')
+    def validate_coordinate(self):
+        if self.longitude is None or self.latitude is None or (self.longitude == 0.0 and self.latitude == 0.0):
+            raise ValueError('Coordinate cannot be 0.0 / 0.0')
+        return self
 
 
 class PermitStatus(Enum):

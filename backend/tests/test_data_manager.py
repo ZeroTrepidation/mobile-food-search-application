@@ -4,10 +4,10 @@ from typing import List
 
 import pytest
 
-from backend.app.adapters.memory import InMemoryFoodProviderRepository
-from backend.app.adapters.sfgov_client import SFGovFoodProviderDataClient
-from backend.app.data_manager import DataManager
-from backend.tests import helpers  # type: ignore
+from app.adapters.memory import InMemoryFoodProviderRepository
+from app.adapters.sfgov_data_client import SFGovFoodProviderDataClient
+from app.data_manager import DataManager
+from tests import helpers  # type: ignore
 
 
 class TestClient(SFGovFoodProviderDataClient):

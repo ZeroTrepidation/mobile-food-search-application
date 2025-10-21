@@ -47,18 +47,30 @@ export default function SearchLegend({
             onDropPinChange(null)
             onHighlightChange(new Set())
         }
+        // Default status behavior per mode
+        if (mode === 'pin') {
+            if (statuses.length === 0) setStatuses(['APPROVED'])
+        } else if (mode === 'name') {
+            // No default for name mode
+            if (statuses.length > 0) setStatuses([])
+        }
     }, [mode])
 
 
     function fitToMarkers(items: FoodProviderDTO[]) {
-        const coords = items.filter(p => p.latitude != null && p.longitude != null)
+        const coords = items.filter(p => p.coord?.latitude != null && p.coord?.longitude != null)
         if (coords.length === 0) return
-        const avgLat = coords.reduce((s, p) => s + (p.latitude as number), 0) / coords.length
-        const avgLng = coords.reduce((s, p) => s + (p.longitude as number), 0) / coords.length
+        const avgLat = coords.reduce((s, p) => s + (p.coord?.latitude as number), 0) / coords.length
+        const avgLng = coords.reduce((s, p) => s + (p.coord?.longitude as number), 0) / coords.length
         onMapViewChange({lat: avgLat, lng: avgLng}, 13)
     }
 
-    const effectiveStatuses = () => Array.from(new Set(['APPROVED', ...statuses]))
+    const effectiveStatuses = () => {
+        if (mode === 'pin') {
+            return statuses.length ? statuses : ['APPROVED']
+        }
+        return statuses
+    }
 
     // Register map click handler for pin mode (uses current statuses)
     useEffect(() => {
@@ -132,7 +144,7 @@ export default function SearchLegend({
                         <label style={{fontWeight: 600, flex: 1}}>Search Mode:</label>
                         <div className="p-formgroup-inline" style={{display: 'flex', alignItems: 'center', gap: 8}}>
                             <SelectButton style={{flex: 1}} defaultValue={mode} value={mode}
-                                          onChange={(e) => setMode(e.value)} options={modes}/>
+                                          onChange={(e) => setMode(e.value)} options={modes}></SelectButton>
                         </div>
                         <hr/>
 
@@ -143,14 +155,12 @@ export default function SearchLegend({
                                 <IconField iconPosition="left">
                                     <InputIcon className="pi pi-search"> </InputIcon>
                                     <InputText value={nameQuery} onChange={(e) => setNameQuery(e.target.value)}
-                                               placeholder="e.g. tacos"
+                                               placeholder="e.g. Truly"
                                                style={{width: '100%'}}/>
                                 </IconField>
                                 </span>
                                 <div style={{marginTop: 8}}>
-                                    <div style={{fontWeight: 600, marginBottom: 4}}>Status (APPROVED is always
-                                        included)
-                                    </div>
+                                    <div style={{fontWeight: 600, marginBottom: 4}}>Status (optional)</div>
                                     <StatusCheckboxes value={statuses} onChange={setStatuses}/>
                                 </div>
                             </div>
@@ -172,9 +182,7 @@ export default function SearchLegend({
                                     the closest providers.
                                 </div>
                                 <div>
-                                    <div style={{fontWeight: 600, marginBottom: 4}}>Status (APPROVED is always
-                                        included)
-                                    </div>
+                                    <div style={{fontWeight: 600, marginBottom: 4}}>Status (default: APPROVED)</div>
                                     <StatusCheckboxes value={statuses} onChange={setStatuses}/>
                                 </div>
                             </div>

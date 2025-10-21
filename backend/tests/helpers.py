@@ -1,6 +1,6 @@
 from datetime import datetime, timezone, timedelta
 
-from backend.app.domain.models import PermitStatus, Permit, FoodProvider, Coordinate
+from app.domain.models import PermitStatus, Permit, FoodProvider, Coordinate
 
 
 def make_permit(status: PermitStatus | str = PermitStatus.APPROVED,

@@ -2,8 +2,8 @@ from abc import ABC, abstractmethod
 from datetime import datetime
 from typing import List
 
-from backend.app.domain.models import FoodProvider
-from backend.app.domain.specification import Specification
+from app.domain.models import FoodProvider
+from app.domain.specification import Specification
 
 
 class FoodProviderRepository(ABC):

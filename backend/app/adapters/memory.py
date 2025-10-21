@@ -2,9 +2,9 @@ from __future__ import annotations
 
 from typing import List, Dict
 
-from backend.app.domain.models import FoodProvider
-from backend.app.domain.ports import FoodProviderRepository
-from backend.app.domain.specification import Specification
+from app.domain.models import FoodProvider
+from app.domain.ports import FoodProviderRepository
+from app.domain.specification import Specification
 
 
 class InMemoryFoodProviderRepository(FoodProviderRepository):

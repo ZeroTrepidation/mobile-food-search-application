@@ -10,10 +10,14 @@ export interface FoodProviderDTO {
   name: string;
   foodItems?: string;
   permit?: PermitDTO | null;
-  longitude?: number | null;
-  latitude?: number | null;
+  coord: CoordinateDto | null
   locationDescription?: string | null;
   address?: string | null;
+}
+
+export interface CoordinateDto {
+  longitude: number;
+  latitude: number;
 }
 
 const BASE = '';

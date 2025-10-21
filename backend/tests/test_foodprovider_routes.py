@@ -1,10 +1,10 @@
 import pytest
 from fastapi.testclient import TestClient
 
-from backend.app.adapters.memory import InMemoryFoodProviderRepository
-from backend.app.dependencies import get_repository
-from backend.app.main import app
-from backend.tests.helpers import general_mock_providers
+from app.adapters.memory import InMemoryFoodProviderRepository
+from app.dependencies import get_repository
+from app.main import app
+from tests.helpers import general_mock_providers
 
 mock_repository = InMemoryFoodProviderRepository()
 

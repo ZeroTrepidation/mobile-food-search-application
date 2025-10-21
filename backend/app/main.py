@@ -3,10 +3,10 @@ from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, Depends
 
-from backend.app.dependencies import get_repository, initialize, shutdown
-from backend.app.routers import foodproviders
+from app.dependencies import get_repository, initialize, shutdown
+from app.routers import foodprovider
 
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(level=logging.INFO, force=True)
 
 
 @asynccontextmanager
@@ -18,9 +18,9 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(lifespan=lifespan, dependencies=[Depends(get_repository)])
 
-app.include_router(foodproviders.router)
+app.include_router(foodprovider.router)
 
 
-@app.get("/health")
+@app.get("/health", include_in_schema=False)
 async def health_check():
     return {"status": "ok"}

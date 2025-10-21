@@ -48,14 +48,14 @@ export default function MapView({ center, zoom = 13, markers, highlightedIds, on
       <ViewController center={center} zoom={zoom} />
       <MapClickHandler onMapClick={onMapClick} />
 
-      {markers.filter(p => p.latitude != null && p.longitude != null).map(p => {
+      {markers.filter(p => p.coord?.latitude as number && p.coord?.longitude != null).map(p => {
         const isHighlighted = highlightedIds?.has(p.locationId)
         const color = isHighlighted ? '#ff5252' : '#1e88e5'
         const radius = isHighlighted ? 8 : 6
         return (
           <CircleMarker
             key={p.locationId}
-            center={[p.latitude as number, p.longitude as number]}
+            center={[p.coord?.latitude as number, p.coord?.longitude as number]}
             radius={radius}
             pathOptions={{ color: isHighlighted ? '#ffffff' : color, weight: 2, fillColor: color, fillOpacity: isHighlighted ? 1 : 0.9 }}
             eventHandlers={{ click: () => onMarkerClick?.(p) }}

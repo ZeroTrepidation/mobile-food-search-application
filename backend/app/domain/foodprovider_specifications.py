@@ -1,7 +1,7 @@
 from typing import List
 
-from backend.app.domain.models import FoodProvider, PermitStatus, Coordinate
-from backend.app.domain.specification import Specification
+from app.domain.models import FoodProvider, PermitStatus, Coordinate
+from app.domain.specification import Specification
 
 
 class HasPermitStatus(Specification[FoodProvider]):

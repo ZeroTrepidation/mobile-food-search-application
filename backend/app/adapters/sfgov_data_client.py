@@ -4,11 +4,10 @@ import logging
 from datetime import datetime, timezone
 from typing import List, Optional
 
-from pydantic import ValidationError
 from sodapy import Socrata
 
-from backend.app.domain.models import FoodProvider, Permit, PermitStatus, Coordinate
-from backend.app.domain.ports import FoodProviderDataClient
+from app.domain.models import FoodProvider, Permit, PermitStatus, Coordinate
+from app.domain.ports import FoodProviderDataClient
 
 DATASET_ID = "rqzj-sfat"  # Mobile Food Facility Permits (SF Gov)
 DOMAIN = "data.sfgov.org"
@@ -43,7 +42,7 @@ class SFGovFoodProviderDataClient(FoodProviderDataClient):
         for row in results:
             try:
                 fp = _foodprovider_from_row(row)
-            except ValidationError:
+            except ValueError as e:
                 continue
 
             if fp is not None:

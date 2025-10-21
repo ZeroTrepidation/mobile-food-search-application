@@ -5,7 +5,7 @@ import logging
 from datetime import datetime
 from typing import Dict, List, Optional
 
-from backend.app.domain.ports import FoodProviderDataClient, FoodProviderRepository
+from app.domain.ports import FoodProviderDataClient, FoodProviderRepository
 
 logger = logging.getLogger(__name__)
 

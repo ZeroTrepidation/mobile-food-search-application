@@ -1,6 +1,6 @@
-from backend.app.adapters.memory import InMemoryFoodProviderRepository
-from backend.app.adapters.sfgov_client import SFGovFoodProviderDataClient
-from backend.app.data_manager import DataManager
+from app.adapters.memory import InMemoryFoodProviderRepository
+from app.adapters.sfgov_data_client import SFGovFoodProviderDataClient
+from app.data_manager import DataManager
 
 repository = InMemoryFoodProviderRepository()
 
