@@ -1,0 +1,547 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Mobile Food Search API",
+    "description": "A REST API for searching for mobile food providers. Currently limited to the San Francisco Food Authority data set.",
+    "contact": {
+      "name": "Seth Tummillo",
+      "url": "https://github.com/ZeroTrepidation/mobile-food-search-application"
+    },
+    "version": "0.1.0"
+  },
+  "paths": {
+    "/api/v1/food-providers/name/{name}": {
+      "get": {
+        "tags": [
+          "food-providers",
+          "food-providers"
+        ],
+        "summary": "Search for food providers by name",
+        "description": "Search for food providers by name and optionally by permit status",
+        "operationId": "get_food_providers_api_v1_food_providers_name__name__get",
+        "parameters": [
+          {
+            "name": "name",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Name"
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "default": "",
+              "title": "Status"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of food providers",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/FoodProviderResponse-Output"
+                  },
+                  "title": "Response Get Food Providers Api V1 Food Providers Name  Name  Get"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid name or status"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/food-providers/street/{street}": {
+      "get": {
+        "tags": [
+          "food-providers",
+          "food-providers"
+        ],
+        "summary": "Search for food providers by street name",
+        "description": "Search for food providers by street name. Street is required",
+        "operationId": "get_food_providers_api_v1_food_providers_street__street__get",
+        "parameters": [
+          {
+            "name": "street",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Street"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of food providers",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/FoodProviderResponse-Output"
+                  },
+                  "title": "Response Get Food Providers Api V1 Food Providers Street  Street  Get"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid street"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/food-providers/closest": {
+      "get": {
+        "tags": [
+          "food-providers",
+          "food-providers"
+        ],
+        "summary": "Search for food providers closest to a given coordinate",
+        "description": "Search for food providers closest to a given coordinate. Longitude and latitude are required, additionally a limit can be specified to increase the number of results and a permit status can be specified to filter by permit status. By default, only approved providers are returned.",
+        "operationId": "get_n_closest_providers_api_v1_food_providers_closest_get",
+        "parameters": [
+          {
+            "name": "lng",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Lng"
+            }
+          },
+          {
+            "name": "lat",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Lat"
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "default": "APPROVED",
+              "title": "Status"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "default": "5",
+              "title": "Limit"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of food providers",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/FoodProviderResponse-Output"
+                  },
+                  "title": "Response Get N Closest Providers Api V1 Food Providers Closest Get"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid longitude or latitude, or invalid limit / status"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Coordinate": {
+        "properties": {
+          "longitude": {
+            "type": "number",
+            "title": "Longitude"
+          },
+          "latitude": {
+            "type": "number",
+            "title": "Latitude"
+          }
+        },
+        "type": "object",
+        "required": [
+          "longitude",
+          "latitude"
+        ],
+        "title": "Coordinate"
+      },
+      "FoodProviderResponse-Input": {
+        "properties": {
+          "locationId": {
+            "type": "string",
+            "title": "Locationid"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "foodItems": {
+            "type": "string",
+            "title": "Fooditems"
+          },
+          "permit": {
+            "$ref": "#/components/schemas/Permit"
+          },
+          "coord": {
+            "$ref": "#/components/schemas/Coordinate"
+          },
+          "locationDescription": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Locationdescription"
+          },
+          "blocklot": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Blocklot"
+          },
+          "block": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Block"
+          },
+          "lot": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Lot"
+          },
+          "cnn": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Cnn"
+          },
+          "address": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Address"
+          }
+        },
+        "type": "object",
+        "required": [
+          "locationId",
+          "name",
+          "foodItems",
+          "permit",
+          "coord",
+          "locationDescription",
+          "blocklot",
+          "block",
+          "lot",
+          "cnn",
+          "address"
+        ],
+        "title": "FoodProviderResponse"
+      },
+      "FoodProviderResponse-Output": {
+        "properties": {
+          "locationId": {
+            "type": "string",
+            "title": "Locationid"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "foodItems": {
+            "type": "string",
+            "title": "Fooditems"
+          },
+          "permit": {
+            "$ref": "#/components/schemas/Permit"
+          },
+          "coord": {
+            "$ref": "#/components/schemas/Coordinate"
+          },
+          "locationDescription": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Locationdescription"
+          },
+          "blocklot": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Blocklot"
+          },
+          "block": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Block"
+          },
+          "lot": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Lot"
+          },
+          "cnn": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Cnn"
+          },
+          "address": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Address"
+          }
+        },
+        "type": "object",
+        "required": [
+          "locationId",
+          "name",
+          "foodItems",
+          "permit",
+          "coord",
+          "locationDescription",
+          "blocklot",
+          "block",
+          "lot",
+          "cnn",
+          "address"
+        ],
+        "title": "FoodProviderResponse"
+      },
+      "HTTPValidationError": {
+        "properties": {
+          "detail": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            },
+            "type": "array",
+            "title": "Detail"
+          }
+        },
+        "type": "object",
+        "title": "HTTPValidationError"
+      },
+      "Permit": {
+        "properties": {
+          "permitStatus": {
+            "$ref": "#/components/schemas/PermitStatus"
+          },
+          "permitID": {
+            "type": "string",
+            "title": "Permitid"
+          },
+          "approvalDate": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Approvaldate"
+          },
+          "recievedDate": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Recieveddate"
+          },
+          "expirationDate": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Expirationdate"
+          }
+        },
+        "type": "object",
+        "required": [
+          "permitStatus",
+          "permitID",
+          "approvalDate",
+          "recievedDate",
+          "expirationDate"
+        ],
+        "title": "Permit"
+      },
+      "PermitStatus": {
+        "type": "string",
+        "enum": [
+          "APPROVED",
+          "EXPIRED",
+          "REQUESTED",
+          "SUSPEND",
+          "ISSUED"
+        ],
+        "title": "PermitStatus"
+      },
+      "ValidationError": {
+        "properties": {
+          "loc": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "type": "array",
+            "title": "Location"
+          },
+          "msg": {
+            "type": "string",
+            "title": "Message"
+          },
+          "type": {
+            "type": "string",
+            "title": "Error Type"
+          }
+        },
+        "type": "object",
+        "required": [
+          "loc",
+          "msg",
+          "type"
+        ],
+        "title": "ValidationError"
+      }
+    }
+  }
+}

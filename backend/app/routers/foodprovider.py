@@ -13,6 +13,7 @@ from humps import camelize
 router = APIRouter(
     prefix="/api/v1/food-providers",
     dependencies=[Depends(get_repository)],
+    tags=["food-providers"],
 )
 
 
@@ -29,8 +30,10 @@ class FoodProviderResponse(FoodProvider):
     "/name/{name}",
     response_model=List[FoodProviderResponse],
     summary="Search for food providers by name",
-    description=("Search for food providers by name and optionally by permit status. "
-                 "Status must be one of APPROVED, REJECTED, PENDING, or SUSPEND.")
+    description=("Search for food providers by name and optionally by permit status"),
+    response_description="List of food providers",
+    tags=["food-providers"],
+    responses={400: {"description": "Invalid name or status"}},
 )
 async def get_food_providers(repository: Annotated[FoodProviderRepository, Depends(get_repository)], name: str = "",
                              status: str = ""):
@@ -53,9 +56,17 @@ async def get_food_providers(repository: Annotated[FoodProviderRepository, Depen
     return items
 
 
-@router.get("/street/{street}", response_model=List[FoodProviderResponse])
-async def get_food_providers(repository: Annotated[FoodProviderRepository, Depends(get_repository)], street: str = ""):
-    if street == "":
+@router.get(
+    "/street/{street}",
+    response_model=List[FoodProviderResponse],
+    summary="Search for food providers by street name",
+    description="Search for food providers by street name. Street is required",
+    response_description="List of food providers",
+    tags=["food-providers"],
+    responses={400: {"description": "Invalid street"}},
+)
+async def get_food_providers(repository: Annotated[FoodProviderRepository, Depends(get_repository)], street: str):
+    if street == "" or street is None:
         raise HTTPException(status_code=400, detail="Street cannot be empty")
     spec = LikeStreetName(street)
 
@@ -65,7 +76,17 @@ async def get_food_providers(repository: Annotated[FoodProviderRepository, Depen
     return items
 
 
-@router.get("/closest", response_model=List[FoodProviderResponse])
+@router.get(
+    "/closest",
+    response_model=List[FoodProviderResponse],
+    summary="Search for food providers closest to a given coordinate",
+    description="Search for food providers closest to a given coordinate. Longitude and latitude are required, "
+                "additionally a limit can be specified to increase the number of results and a permit status can "
+                "be specified to filter by permit status. By default, only approved providers are returned.",
+    response_description="List of food providers",
+    tags=["food-providers"],
+    responses={400: {"description": "Invalid longitude or latitude, or invalid limit / status"}},
+)
 async def get_n_closest_providers(repository: Annotated[FoodProviderRepository, Depends(get_repository)], lng: str,
                                   lat: str, status: str = "APPROVED", limit: str = "5"):
     try:
