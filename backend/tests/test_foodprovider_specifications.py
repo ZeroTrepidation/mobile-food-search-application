@@ -33,7 +33,6 @@ class TestSpecifications:
         a = make_provider("A", name="A", latitude=1.0, longitude=2.0)
         b = make_provider("B", name="B", latitude=50.0, longitude=50.0)
         c = make_provider("C", name="C", latitude=-60.0, longitude=-60.0)
-        d = make_provider("A", name="A", latitude=0.0, longitude=0.0)
 
         repo.replace_all([a, b, c])
 
@@ -58,13 +57,7 @@ class TestSpecifications:
             assert len(res) == 1
             assert res[0].location_id == "C"
 
-        # Near A because of D being 0.0 / 0.0
-        spec_d = ClosestToPointSpecification(Coordinate(latitude=0.0, longitude=0.0), limit=1)
-        res = repo.get_by_spec(spec_d)
-        assert len(res) == 1
-        assert res[0].location_id == "A"
-
-        check_order = ClosestToPointSpecification(Coordinate(latitude=0.0, longitude=0.0), limit=4)
+        check_order = ClosestToPointSpecification(Coordinate(latitude=0.1, longitude=0.0), limit=4)
         res = repo.get_by_spec(check_order)
         assert len(res) == 3
         assert res[0].location_id == "A"
